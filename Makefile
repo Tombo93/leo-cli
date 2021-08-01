@@ -30,6 +30,10 @@ clean:
 	$(RM) -r $(BUILD_DIR)/*
 	$(RM) $(TEST_DIR)/*.out
 
+.PHONY: run
+run:
+	$(BIN) "abitare"
+
 .PHONY: test
 test:
 	@echo "\nCompiling tests\n"

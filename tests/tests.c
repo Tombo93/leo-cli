@@ -10,16 +10,9 @@ static char *test_ui()
     return EXIT_SUCCESS;
 }
 
-static char *test_client()
-{
-    mu_assert("Error, 6 != 7", 6 == 7);
-    return EXIT_SUCCESS;
-}
-
 static char *all_tests()
 {
     mu_run_test(test_ui);
-    mu_run_test(test_client);
     return EXIT_SUCCESS;
 }
 

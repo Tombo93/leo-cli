@@ -1,8 +1,13 @@
-#include <curses.h>
+#include <stdlib.h>
 #include <stdbool.h>
+#include <curses.h>
 
 bool validate_cmdline_input(int argc, char **argv)
 {
-    printf("%s: %d", argv[0], argc);
-    return false;
+    if (argc != 2)
+    {
+        fprintf(stderr, "Error\nUsage: %s <search word>\n\n", argv[0]);
+        return false;
+    }
+    return true;
 }

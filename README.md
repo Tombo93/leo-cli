@@ -1,5 +1,5 @@
 # leo-CLI
-A tool for getting italian to german translations from leo.org.
+A cmdline tool for getting italian to german translations from leo.org.
 # Dependencies
 # Installation
 # Usage

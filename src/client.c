@@ -4,7 +4,15 @@
 
 #include "client.h"
 
-client *curl_setup_connection(const char *adress)
+typedef struct client
+{
+    CURL *curl;
+    CURLcode res;
+} client;
+
+/* __________________ private functions __________________ */
+
+static client *curl_setup_connection(const char *url)
 {
     client *client = malloc(sizeof *client);
     CURL *curl;
@@ -14,7 +22,7 @@ client *curl_setup_connection(const char *adress)
 
     if (curl)
     {
-        curl_easy_setopt(curl, CURLOPT_URL, adress);
+        curl_easy_setopt(curl, CURLOPT_URL, url);
 
         client->curl = curl;
         return client;
@@ -22,7 +30,7 @@ client *curl_setup_connection(const char *adress)
     return NULL;
 }
 
-CURLcode perform_get_request(client *client)
+static CURLcode perform_get_request(client *client)
 {
     client->res = curl_easy_perform(client->curl);
     if (client->res != CURLE_OK)
@@ -33,9 +41,19 @@ CURLcode perform_get_request(client *client)
     return client->res;
 }
 
-void perform_cleanup(client *client)
+static void perform_cleanup(client *client)
 {
     curl_easy_cleanup(client->curl);
     curl_global_cleanup();
     free(client);
+}
+
+/* _______________________________________________________ */
+
+CURLcode perform_search(const char *url)
+{
+    client *C = curl_setup_connection(url);
+    CURLcode status = perform_get_request(C);
+    perform_cleanup(C);
+    return status;
 }
