@@ -9,6 +9,3 @@ build/*
 #### VSCode
 .vscode
 .vscode/*
-
-#### Misc
-*.pdf

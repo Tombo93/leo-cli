@@ -3,6 +3,7 @@
 
 #include <curl/curl.h>
 
-CURLcode perform_search(const char *url);
+const char *perform_curl_init(const char *url);
+void perform_cleanup();
 
 #endif

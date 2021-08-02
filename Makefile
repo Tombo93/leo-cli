@@ -1,6 +1,6 @@
 CC ?= gcc
 CFLAGS = -g -m64 -Wall -Werror -Wunused-parameter -Wunused-variable -O3
-LDFLAGS = -lcurl -lncurses
+LDFLAGS = -lcurl -lncurses -ltidy
 
 SRC_DIR = ./src
 BUILD_DIR = ./build
@@ -32,7 +32,7 @@ clean:
 
 .PHONY: run
 run:
-	$(BIN) "abitare"
+	$(BIN) "testa"
 
 .PHONY: test
 test:

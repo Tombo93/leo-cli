@@ -1,59 +1,67 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <curl/curl.h>
 
 #include "client.h"
 
-typedef struct client
+typedef struct myhtml
 {
-    CURL *curl;
-    CURLcode res;
-} client;
+    char *data;
+    size_t size;
+} myhtml;
 
-/* __________________ private functions __________________ */
+static CURL *curl;
 
-static client *curl_setup_connection(const char *url)
+static size_t write_html(char *buffer, size_t size, size_t nmemb, void *dataptr)
 {
-    client *client = malloc(sizeof *client);
-    CURL *curl;
+    size_t realsize = size * nmemb;
+    myhtml *html_p = (myhtml *)dataptr;
 
-    curl_global_init(CURL_GLOBAL_DEFAULT);
+    char *ptr = realloc(html_p->data, html_p->size + realsize + 1);
+    if (ptr == NULL)
+        return 0; /* out of memory! */
+    html_p->data = ptr;
+
+    memcpy(&(html_p->data[html_p->size]), buffer, realsize);
+    html_p->size += realsize;
+    html_p->data[html_p->size] = 0;
+
+    return realsize;
+}
+
+const char *perform_curl_init(const char *url)
+{
+    myhtml *response = malloc(sizeof *response);
+    CURLcode res_code;
+
+    curl_global_init(CURL_GLOBAL_ALL);
     curl = curl_easy_init();
 
     if (curl)
     {
         curl_easy_setopt(curl, CURLOPT_URL, url);
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_html);
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, response);
 
-        client->curl = curl;
-        return client;
+        res_code = curl_easy_perform(curl);
+        if (res_code != CURLE_OK)
+        {
+            fprintf(stderr, "curl_easy_perform() failed: %s\n",
+                    curl_easy_strerror(res_code));
+        }
+
+        const char *data = (const char *)response->data;
+        free(response);
+        return data;
     }
+
+    free(response);
     return NULL;
 }
 
-static CURLcode perform_get_request(client *client)
+void perform_cleanup()
 {
-    client->res = curl_easy_perform(client->curl);
-    if (client->res != CURLE_OK)
-    {
-        fprintf(stderr, "curl_easy_perform() failed: %s\n",
-                curl_easy_strerror(client->res));
-    }
-    return client->res;
-}
-
-static void perform_cleanup(client *client)
-{
-    curl_easy_cleanup(client->curl);
+    curl_easy_cleanup(curl);
     curl_global_cleanup();
-    free(client);
-}
-
-/* _______________________________________________________ */
-
-CURLcode perform_search(const char *url)
-{
-    client *C = curl_setup_connection(url);
-    CURLcode status = perform_get_request(C);
-    perform_cleanup(C);
-    return status;
 }
