@@ -8,6 +8,8 @@
 
 #define LEO_ITA_DEU_ADRESS "https://dict.leo.org/italienisch-deutsch/"
 
+const char *example_vocab[] = {"testa", "abitare", "sforzare"};
+
 int main(int argc, char **argv)
 {
 
@@ -26,6 +28,12 @@ int main(int argc, char **argv)
 
     /* Do something with the response */
     html_tidy(response);
+
+    init_ui();
+
+    print_vocab_list(example_vocab, 3, 3, 5);
+
+    exit_ui();
 
     /* Clean up curl */
     perform_cleanup();

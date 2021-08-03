@@ -16,7 +16,7 @@ int html_tidy(const char *input)
     Bool ok;
 
     TidyDoc tdoc = tidyCreate(); // Initialize "document"
-    printf("Tidying:\t%s\n", input);
+    printf("Tidying input...\n");
 
     ok = tidyOptSetBool(tdoc, TidyXhtmlOut, yes); // Convert to XHTML
     if (ok)
@@ -36,7 +36,7 @@ int html_tidy(const char *input)
     {
         if (rc > 0)
             printf("\nDiagnostics:\n\n%s", errbuf.bp);
-        printf("\nAnd here is the result:\n\n%s", output.bp);
+        printf("\nEverything fine with Tidy.\nReady for processing...\n\n");
     }
     else
         printf("A severe error (%d) occurred.\n", rc);
