@@ -1,6 +1,8 @@
 #ifndef HTML_PARSER_H
 #define HTML_PARSER_H
 
-int html_tidy(const char *input);
+#include <tidy/tidy.h>
+
+void html_tidy_search(const char *html_str, const char **vocab_list, size_t size);
 
 #endif

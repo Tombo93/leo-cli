@@ -1,6 +1,9 @@
 # leo-CLI
 A cmdline tool for getting italian to german translations from leo.org.
 # Dependencies
+*libcurl
+*ncurses
+*libtidy
 # Installation
 # Usage
 # Credits
