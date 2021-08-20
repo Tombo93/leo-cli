@@ -60,7 +60,7 @@ const char *perform_curl_init(const char *url)
     return NULL;
 }
 
-void perform_cleanup()
+void perform_curl_cleanup()
 {
     curl_easy_cleanup(curl);
     curl_global_cleanup();

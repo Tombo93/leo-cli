@@ -1,11 +1,16 @@
 # leo-CLI
 A cmdline tool for getting italian to german translations from leo.org.
+# TODO
+* curl -> separate initiation and request
+* list -> add functionality
+* testing
+* errorhandling
+* project structure -> separate headers into include dir
 # Dependencies
 *libcurl
 *ncurses
 *libtidy
 # Installation
-# Usage
 # Credits
 I found my inspiration for the project watching a Youtube video
 https://www.youtube.com/watch?v=iF2F0YIgxy4

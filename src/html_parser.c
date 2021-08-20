@@ -30,16 +30,10 @@
 #include <errno.h>
 #include <tidy/tidy.h>
 #include <tidy/tidybuffio.h>
+
 #include "html_parser.h"
 #include "url_str_utils.h"
-
-size_t write_tidy_buf(char *buffer, size_t size, size_t nmemb, void *out)
-{
-    TidyBuffer *tidy_data = (TidyBuffer *)out;
-    size_t realsize = size * nmemb;
-    tidyBufAppend(tidy_data, buffer, realsize);
-    return realsize;
-}
+#include "list.h"
 
 /* Ideas for future improvement:
     Create map of relevant tags that should be traversed deeper, so 
@@ -47,7 +41,7 @@ size_t write_tidy_buf(char *buffer, size_t size, size_t nmemb, void *out)
     Like a DFS wich stops when we know further traversal is not necessary.
     (Depends wholly on how tidy works.)
 */
-static void tidy_traverse_html(TidyDoc tdoc, TidyNode tnod, const char **vocab_list, size_t size)
+static void tidy_traverse_html(TidyDoc tdoc, TidyNode tnod, str_list *vocabs)
 {
     for (TidyNode child = tidyGetChild(tnod); child; child = tidyGetNext(child))
     {
@@ -64,52 +58,62 @@ static void tidy_traverse_html(TidyDoc tdoc, TidyNode tnod, const char **vocab_l
                         tidyBufInit(&buf);
                         if (tidyNodeGetText(tdoc, child, &buf))
                         {
-                            //size = append_str_to_arr((const char *)buf.bp, vocab_list, size);
-                            break;
+                            str_list_add(vocabs, (const char *)buf.bp);
                         }
                         tidyBufFree(&buf);
                     }
                 }
             }
 
-            tidy_traverse_html(tdoc, child, vocab_list, size);
+            tidy_traverse_html(tdoc, child, vocabs);
         }
     }
 }
 
-void html_tidy_search(const char *html_str, const char **vocab_list, size_t size)
+void html_tidy_search(const char *html_str, str_list *vocabs)
 {
     TidyDoc tdoc = tidyCreate();
-    // TidyBuffer output = {0};
+    TidyBuffer output = {0};
     TidyBuffer errbuf = {0};
     int err = -1;
 
     Bool ok = tidyOptSetBool(tdoc, TidyXhtmlOut, yes); // Convert to XHTML
-
     if (ok)
+    {
         err = tidySetErrorBuffer(tdoc, &errbuf); // Capture diagnostics
-    if (err >= 0)
-        err = tidyParseString(tdoc, (ctmbstr)html_str); // Parse the input
-    if (err >= 0)
-        err = tidyCleanAndRepair(tdoc); // Tidy it up!
-    if (err >= 0)
-        err = tidyRunDiagnostics(tdoc); // Kvetch
-    if (err > 1)                        // If error, force output.
-        err = (tidyOptSetBool(tdoc, TidyForceOutput, yes) ? err : -1);
-    // if (err >= 0)
-    //     err = tidySaveBuffer(tdoc, &output); // Pretty Print
+        if (err >= 0)
+        {
+            err = tidyParseString(tdoc, (ctmbstr)html_str); // Parse the input
+            if (err >= 0)
+            {
+                err = tidyCleanAndRepair(tdoc); // Tidy it up!
+                if (err >= 0)
+                {
+                    err = tidyRunDiagnostics(tdoc); // Kvetch
+                    if (err > 1)                    // If error, force output.
+                    {
+                        err = (tidyOptSetBool(tdoc, TidyForceOutput, yes) ? err : -1);
+                        if (err >= 0)
+                        {
+                            err = tidySaveBuffer(tdoc, &output); // Pretty Print
+                        }
+                    }
+                }
+            }
+        }
+    }
 
     if (err >= 0)
     {
         if (err > 0)
             printf("\nDiagnostics:\n\n%s", errbuf.bp);
         printf("\nEverything fine with Tidy.\nReady for processing...\n\n");
-        tidy_traverse_html(tdoc, tidyGetRoot(tdoc), vocab_list, size);
+        tidy_traverse_html(tdoc, tidyGetRoot(tdoc), vocabs);
     }
     else
         printf("A severe error (%d) occurred.\n", err);
 
-    // tidyBufFree(&output);
+    tidyBufFree(&output);
     tidyBufFree(&errbuf);
     tidyRelease(tdoc);
 }

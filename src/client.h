@@ -4,6 +4,6 @@
 #include <curl/curl.h>
 
 const char *perform_curl_init(const char *url);
-void perform_cleanup();
+void perform_curl_cleanup();
 
 #endif
